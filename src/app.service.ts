@@ -4,22 +4,20 @@ import { PageElement, ParseResponse } from './types';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly logger: Logger) {
-    // this.getPageData(
-    //   'https://blog.harmony.one/p/harmony-year-of-efficiency-and-ai',
-    // );
-  }
+  constructor(private readonly logger: Logger) {}
 
-  private async isSubstackIframe(page: Page) {
+  private async isSubstack(page: Page) {
     try {
-      await page.waitForSelector('div#entry div#main iframe', { timeout: 500 });
+      await page.waitForSelector('div#entry div#main .available-content', {
+        timeout: 1000,
+      });
     } catch (e) {
       return false;
     }
     return true;
   }
 
-  private async parseSubstackIframe(page: Page) {
+  private async parseSubstack(page: Page) {
     const parsedElements: PageElement[] = [];
     const selector =
       '.available-content h2, .available-content p, .available-content ul li';
@@ -40,9 +38,9 @@ export class AppService {
   }
 
   private async parsePage(page: Page, url: string) {
-    const isSubstackIframe = await this.isSubstackIframe(page);
-    if (isSubstackIframe) {
-      return this.parseSubstackIframe(page);
+    const isSubstack = await this.isSubstack(page);
+    if (isSubstack) {
+      return this.parseSubstack(page);
     }
     return [];
   }
@@ -72,7 +70,7 @@ export class AppService {
       const page = await browser.newPage();
       page.on('response', addResponseSize);
       await page.goto(url);
-      await page.waitForNetworkIdle({ timeout: 1000 });
+      await page.waitForNetworkIdle({ timeout: 5000 });
       result = await this.parsePage(page, url);
       page.off('response', addResponseSize);
     } catch (e) {
