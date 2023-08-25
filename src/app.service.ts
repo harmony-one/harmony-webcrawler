@@ -9,7 +9,7 @@ export class AppService {
   private async isSubstack(page: Page) {
     try {
       await page.waitForSelector('div#entry div#main .available-content', {
-        timeout: 1000,
+        timeout: 10000,
       });
     } catch (e) {
       return false;
@@ -70,7 +70,7 @@ export class AppService {
       const page = await browser.newPage();
       page.on('response', addResponseSize);
       await page.goto(url);
-      await page.waitForNetworkIdle({ timeout: 5000 });
+      await page.waitForNetworkIdle({ timeout: 10000 });
       result = await this.parsePage(page, url);
       page.off('response', addResponseSize);
     } catch (e) {
