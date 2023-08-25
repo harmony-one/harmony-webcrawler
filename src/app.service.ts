@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import puppeteer, { Page } from 'puppeteer';
-import { PageElement } from './types';
+import { PageElement, ParseResponse } from './types';
 
 @Injectable()
 export class AppService {
@@ -47,7 +47,18 @@ export class AppService {
     return [];
   }
 
-  public async getPageData(url: string): Promise<PageElement[]> {
+  public async getPageData(url: string): Promise<ParseResponse> {
+    const timeStart = Date.now();
+    let networkTraffic = 0;
+    let result: PageElement[] = [];
+
+    async function addResponseSize(response) {
+      try {
+        const buffer = await response.buffer();
+        networkTraffic += buffer.length;
+      } catch {}
+    }
+
     const browser = await puppeteer.launch({
       headless: true,
       args: [
@@ -59,10 +70,11 @@ export class AppService {
 
     try {
       const page = await browser.newPage();
+      page.on('response', addResponseSize);
       await page.goto(url);
       await page.waitForNetworkIdle({ timeout: 1000 });
-      const elements = await this.parsePage(page, url);
-      return elements;
+      result = await this.parsePage(page, url);
+      page.off('response', addResponseSize);
     } catch (e) {
       this.logger.error(
         `Failed to fetch page content: ${(e as Error).message}`,
@@ -71,6 +83,10 @@ export class AppService {
       await browser.close();
       this.logger.log(`Browser closed`);
     }
-    return []
+    return {
+      result,
+      elapsedTime: Date.now() - timeStart,
+      networkTraffic,
+    };
   }
 }

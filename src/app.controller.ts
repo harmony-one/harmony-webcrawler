@@ -19,11 +19,6 @@ export class AppController {
     if (!url.includes('http')) {
       throw new BadRequestException('Wrong url');
     }
-    const timeStart = Date.now();
-    const result = await this.appService.getPageData(url);
-    return {
-      result,
-      elapsedTime: Date.now() - timeStart,
-    };
+    return await this.appService.getPageData(url);
   }
 }

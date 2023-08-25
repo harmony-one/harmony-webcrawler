@@ -6,4 +6,5 @@ export interface PageElement {
 export interface ParseResponse {
   result: PageElement[];
   elapsedTime: number;
+  networkTraffic: number;
 }
