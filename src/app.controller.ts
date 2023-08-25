@@ -1,4 +1,10 @@
-import { BadRequestException, Controller, Get, Logger, Query } from "@nestjs/common";
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Logger,
+  Query,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { ParseResponse } from './types';
 
