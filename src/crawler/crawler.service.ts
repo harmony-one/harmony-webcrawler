@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import puppeteer, { Page } from 'puppeteer';
-import { PageElement, ParseResponse } from '../types';
+import { PageElement, ParseResult } from '../types';
 
 @Injectable()
 export class CrawlerService {
@@ -45,10 +45,10 @@ export class CrawlerService {
     return [];
   }
 
-  public async getPageData(url: string): Promise<ParseResponse> {
+  public async getPageData(url: string): Promise<ParseResult> {
     const timeStart = Date.now();
     let networkTraffic = 0;
-    let result: PageElement[] = [];
+    let elements: PageElement[] = [];
 
     async function addResponseSize(response) {
       try {
@@ -71,7 +71,7 @@ export class CrawlerService {
       page.on('response', addResponseSize);
       await page.goto(url);
       await page.waitForNetworkIdle({ timeout: 10000 });
-      result = await this.parsePage(page, url);
+      elements = await this.parsePage(page, url);
       page.off('response', addResponseSize);
     } catch (e) {
       this.logger.error(
@@ -82,7 +82,7 @@ export class CrawlerService {
       this.logger.log(`Browser closed`);
     }
     return {
-      result,
+      elements,
       elapsedTime: Date.now() - timeStart,
       networkTraffic,
     };

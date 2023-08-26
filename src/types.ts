@@ -3,8 +3,17 @@ export interface PageElement {
   tagName: string;
 }
 
-export interface ParseResponse {
-  result: PageElement[];
+export interface ParseResult {
+  elements: PageElement[];
   elapsedTime: number;
   networkTraffic: number;
+}
+
+export interface ParseJob {
+  id: string;
+  url: string;
+  result: ParseResult | null;
+  createdAt: number;
+  startedAt: number | null;
+  completedAt: number | null;
 }

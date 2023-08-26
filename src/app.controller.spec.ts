@@ -4,12 +4,14 @@ import { AppService } from './app.service';
 import { Logger } from '@nestjs/common';
 import { CrawlerService } from './crawler/crawler.service';
 import { JobsService } from './jobs/jobs.service';
+import { CacheModule } from '@nestjs/cache-manager';
 
 describe('AppController', () => {
   let appController: AppController;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
+      imports: [CacheModule.register()],
       controllers: [AppController],
       providers: [CrawlerService, AppService, Logger, JobsService],
     }).compile();
@@ -28,7 +30,7 @@ describe('AppController', () => {
       const data = await appController.parseContent(
         'https://xn--qv9h.s.country/p/telegram-bots-and-clients-self-custody',
       );
-      expect(data.result.length).toBeGreaterThanOrEqual(0);
+      expect(data.elements.length).toBeGreaterThanOrEqual(0);
     }, 30000);
   });
 
@@ -37,7 +39,7 @@ describe('AppController', () => {
       const data = await appController.parseContent(
         'https://blog.harmony.one/p/harmony-year-of-efficiency-and-ai',
       );
-      expect(data.result.length).toBeGreaterThanOrEqual(0);
+      expect(data.elements.length).toBeGreaterThanOrEqual(0);
     }, 30000);
   });
 });
