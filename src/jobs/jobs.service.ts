@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { ParseJob } from '../types';
+import { JobStatus, ParseJob } from '../types';
 
 @Injectable()
 export class JobsService {
@@ -18,7 +18,9 @@ export class JobsService {
     const newJob: ParseJob = {
       id,
       url,
+      status: JobStatus.created,
       result: null,
+      error: null,
       createdAt: Date.now(),
       startedAt: null,
       completedAt: null,

@@ -3,6 +3,7 @@ import { JobsService } from './jobs.service';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
 import configuration from '../config/configuration';
+import { JobStatus } from '../types';
 
 describe('JobsService', () => {
   let service: JobsService;
@@ -27,7 +28,7 @@ describe('JobsService', () => {
 
   it('should register new job', async () => {
     const newJob = await service.registerJob('');
-    expect(typeof newJob.id).toBe('string');
     expect(newJob.id.length).toBe(10);
+    expect(newJob.status).toBe(JobStatus.created);
   });
 });

@@ -1,8 +1,8 @@
 {
   "name": "harmony-webcrawler",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Harmony web page crawler",
+  "author": "Artem Kolodko",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
