@@ -7,17 +7,19 @@ import {
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ParseResponse } from './types';
+import { CrawlerService } from './crawler/crawler.service';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
+    private readonly crawlerService: CrawlerService,
     private readonly logger: Logger,
   ) {}
 
   @Get()
   getStatus(): string {
-    return 'OK';
+    return this.appService.getStatus();
   }
 
   @Get('/parse')
@@ -29,7 +31,7 @@ export class AppController {
       throw new BadRequestException('Wrong url');
     }
     this.logger.log(`Start parsing ${url}...`);
-    const data = await this.appService.getPageData(url);
+    const data = await this.crawlerService.getPageData(url);
     this.logger.log(
       `Parsing completed ${url}. Page elements: ${data.result.length}, elapsed time: ${data.elapsedTime}, network traffic: ${data.networkTraffic}.`,
     );
