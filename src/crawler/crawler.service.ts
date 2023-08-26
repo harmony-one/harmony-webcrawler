@@ -16,6 +16,17 @@ export class CrawlerService {
     }
     return true;
   }
+  
+  private async isNotion(page: Page) {
+    try {
+      await page.waitForSelector('div#notion-app', {
+        timeout: 10000,
+      });
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
 
   private async parseSubstack(page: Page) {
     const parsedElements: PageElement[] = [];
