@@ -35,18 +35,27 @@ describe('AppController', () => {
   describe('parse Substack', () => {
     it('should return parsed data', async () => {
       const data = await appController.parseContent(
-        'https://xn--qv9h.s.country/p/telegram-bots-and-clients-self-custody',
+        'https://read.substack.com/p/see-what-your-friends-are-reading',
       );
-      expect(data.elements.length).toBeGreaterThanOrEqual(0);
+      expect(data.elements.length).toBeGreaterThan(0);
     }, 30000);
   });
 
-  describe('parse Substack IFrame', () => {
+  describe('parse Substack 2', () => {
+    it('should return parsed data', async () => {
+      const data = await appController.parseContent(
+        'https://xn--qv9h.s.country/p/telegram-bots-and-clients-self-custody',
+      );
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 30000);
+  });
+
+  describe('parse Substack in iframe', () => {
     it('should return parsed data', async () => {
       const data = await appController.parseContent(
         'https://blog.harmony.one/p/harmony-year-of-efficiency-and-ai',
       );
-      expect(data.elements.length).toBeGreaterThanOrEqual(0);
+      expect(data.elements.length).toBeGreaterThan(0);
     }, 30000);
   });
 });
