@@ -5,13 +5,20 @@ import { Logger } from '@nestjs/common';
 import { CrawlerService } from './crawler/crawler.service';
 import { JobsService } from './jobs/jobs.service';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
 
 describe('AppController', () => {
   let appController: AppController;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
-      imports: [CacheModule.register()],
+      imports: [
+        CacheModule.register(),
+        ConfigModule.forRoot({
+          load: [configuration],
+        }),
+      ],
       controllers: [AppController],
       providers: [CrawlerService, AppService, Logger, JobsService],
     }).compile();

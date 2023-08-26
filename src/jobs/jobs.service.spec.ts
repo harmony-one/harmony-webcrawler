@@ -1,13 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JobsService } from './jobs.service';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ConfigModule } from '@nestjs/config';
+import configuration from '../config/configuration';
 
 describe('JobsService', () => {
   let service: JobsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [CacheModule.register()],
+      imports: [
+        CacheModule.register(),
+        ConfigModule.forRoot({
+          load: [configuration],
+        }),
+      ],
       providers: [JobsService],
     }).compile();
 
