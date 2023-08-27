@@ -7,6 +7,7 @@ import { JobsService } from './jobs/jobs.service';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
+import { ScheduleModule } from '@nestjs/schedule';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -18,6 +19,7 @@ describe('AppController', () => {
         ConfigModule.forRoot({
           load: [configuration],
         }),
+        ScheduleModule.forRoot(),
       ],
       controllers: [AppController],
       providers: [CrawlerService, AppService, Logger, JobsService],

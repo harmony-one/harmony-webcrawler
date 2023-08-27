@@ -1,10 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import puppeteer, { Page } from 'puppeteer';
 import { PageElement, ParseResult } from '../types';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
+  constructor(private readonly configService: ConfigService) {}
 
   private async isSubstack(page: Page) {
     try {

@@ -8,6 +8,7 @@ import {
 import { AppService } from './app.service';
 import { ParseResult } from './types';
 import { CrawlerService } from './crawler/crawler.service';
+import { ConfigService } from '@nestjs/config';
 
 @Controller()
 export class AppController {
@@ -15,6 +16,7 @@ export class AppController {
     private readonly appService: AppService,
     private readonly crawlerService: CrawlerService,
     private readonly logger: Logger,
+    private readonly configService: ConfigService,
   ) {}
 
   @Get()
