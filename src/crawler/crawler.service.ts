@@ -4,9 +4,9 @@ import { PageElement, ParseResult } from '../types';
 import { ConfigService } from '@nestjs/config';
 
 enum PageType {
-  Substack = "Substack",
-  Notion = "Notion",
-  NotionEmbed = "NotionEmbed", // 1.country Notion embed
+  Substack = 'Substack',
+  Notion = 'Notion',
+  NotionEmbed = 'NotionEmbed', // 1.country Notion embed
 }
 
 interface PageConfig {
@@ -16,9 +16,18 @@ interface PageConfig {
 }
 
 const PAGE_CONFIGS = [
-  { type: PageType.NotionEmbed, pageSelector: 'div.notion', contentSelector: '.notion-page-content-inner *' },
-  { type: PageType.Substack, pageSelector: 'div#entry div#main .available-content', contentSelector: '.available-content h2, .available-content p, .available-content ul li' },
-]
+  {
+    type: PageType.NotionEmbed,
+    pageSelector: 'div.notion',
+    contentSelector: '.notion-page-content-inner *',
+  },
+  {
+    type: PageType.Substack,
+    pageSelector: 'div#entry div#main .available-content',
+    contentSelector:
+      '.available-content h2, .available-content p, .available-content ul li',
+  },
+];
 
 @Injectable()
 export class CrawlerService {
@@ -30,7 +39,7 @@ export class CrawlerService {
       const selectorExists = await this.checkSelector(page, c.pageSelector);
       if (selectorExists) {
         return c;
-      }c
+      }
     }
     return null;
   }
@@ -61,7 +70,7 @@ export class CrawlerService {
           tagName: tagName.toLowerCase(),
         });
       }
-   }
+    }
 
     return parsedElements;
   }
