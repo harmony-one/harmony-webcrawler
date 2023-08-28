@@ -128,6 +128,7 @@ export class CrawlerService {
       await page.waitForNetworkIdle({ timeout: 5000 });
       elements = await this.parsePage(page, url);
       page.off('response', addResponseSize);
+      await page.close();
     } catch (e) {
       this.logger.error(
         `Failed to fetch page content: ${(e as Error).message}`,
