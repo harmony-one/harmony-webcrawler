@@ -19,13 +19,32 @@ export class CrawlerService {
   
   private async isNotion(page: Page) {
     try {
-      await page.waitForSelector('div#notion-app', {
+      await page.waitForSelector('div.notion-page-content', {
         timeout: 10000,
       });
     } catch (e) {
       return false;
     }
     return true;
+  }
+
+  private async parseNotion(page: Page) {
+    const parsedElements: PageElement[] = [];
+    const selector = '.notion-page-content-inner *';
+    const elements = await page.$$(selector);
+
+    for (const item of elements) {
+      const text = await page.evaluate((el) => el.textContent, item);
+      const tagName = await page.evaluate((el) => el.tagName, item);
+
+      if (text) {
+        parsedElements.push({
+          text,
+          tagName: tagName.toLowerCase(),
+        });
+      }
+   }
+    return parsedElements;
   }
 
   private async parseSubstack(page: Page) {
@@ -53,6 +72,14 @@ export class CrawlerService {
     if (isSubstack) {
       return this.parseSubstack(page);
     }
+
+    const isNotion = await this.isNotion(page);
+    if (isNotion) {
+      return this.parseNotion(page);
+    }
+
+    console.log("Is not a Substack or Notion page")
+
     return [];
   }
 
