@@ -7,11 +7,13 @@ enum PageType {
   Substack = 'Substack',
   Notion = 'Notion',
   NotionEmbed = 'NotionEmbed', // 1.country Notion embed
+  WSJ = 'WSJ', // https://www.wsj.com
 }
 
 interface PageConfig {
   type: PageType;
   pageSelector: string;
+  pageUrlSelector?: string;
   contentSelector: string;
 }
 
@@ -27,10 +29,19 @@ const PAGE_CONFIGS = [
     contentSelector:
       '.available-content h2, .available-content p, .available-content ul li',
   },
+  {
+    type: PageType.WSJ,
+    pageSelector: '',
+    pageUrlSelector: 'https://www.wsj.com',
+    contentSelector:
+      '.article-container h1, .article-container h2, .crawler section p, .paywall p',
+  },
 ];
 
 @Injectable()
 export class CrawlerService {
+  viewportWith = 1024;
+  viewportHeight = 1600;
   private readonly logger = new Logger(CrawlerService.name);
   private browser: Browser;
 
@@ -38,8 +49,12 @@ export class CrawlerService {
     this.initBrowser();
   }
 
-  private async getConfig(page: Page) {
+  private async getConfig(page: Page, pageUrl: string) {
     for (const c of PAGE_CONFIGS) {
+      const urlExists = pageUrl.startsWith(c.pageUrlSelector);
+      if (urlExists) {
+        return c;
+      }
       const selectorExists = await this.checkSelector(page, c.pageSelector);
       if (selectorExists) {
         return c;
@@ -79,11 +94,59 @@ export class CrawlerService {
     return parsedElements;
   }
 
+  private async signIn(page: Page, pageUrl: string, pageConfig: PageConfig) {
+    if (pageConfig.type === PageType.WSJ) {
+      const username = this.configService.get('wsj.username');
+      const password = this.configService.get('wsj.password');
+
+      await page.addStyleTag({
+        content: '{scroll-behavior: auto !important;}',
+      });
+      await page.waitForSelector('header a');
+
+      const textToFind = 'Sign In';
+      const link = await page.evaluateHandle(
+        (text) =>
+          [...document.querySelectorAll('a')].find((a) => a.innerText === text),
+        textToFind,
+      );
+      const href = await page.evaluate((el) => el.href, link);
+      this.logger.log(`Login link: ${href}`);
+      await page.goto(href);
+      await page.waitForSelector('button.continue-submit');
+      await page.waitForTimeout(3000);
+
+      await page.waitForSelector('input#password-login-username');
+      await page.type('input#password-login-username', username);
+      await page.waitForTimeout(1000);
+
+      await page.click('button.continue-submit');
+      await page.waitForTimeout(1000);
+
+      await page.waitForSelector('input#password-login-password');
+      await page.type('input#password-login-password', password);
+
+      const signIn = await page.waitForSelector(
+        '.new-design.basic-login-submit',
+      );
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      await page.evaluateHandle((el) => el.click(), signIn);
+
+      // await page.screenshot({ path: 'after_login.png' });
+      await page.waitForSelector('body .article-container');
+
+      this.logger.log(`Logged in: ${pageConfig.type} as ${username}`);
+    }
+  }
+
   private async parsePage(page: Page, url: string) {
-    const config = await this.getConfig(page);
+    const config = await this.getConfig(page, url);
     if (config === null) {
       throw new Error(`Unknown page type: ${url}`);
     }
+    this.logger.log(`Using parse config: ${JSON.stringify(config)}`);
+    await this.signIn(page, url, config);
     return await this.parse(page, config);
   }
 
@@ -96,6 +159,10 @@ export class CrawlerService {
           '--disable-setuid-sandbox',
           '--disable-features=site-per-process',
         ],
+        defaultViewport: {
+          width: this.viewportWith,
+          height: this.viewportHeight,
+        },
       });
       this.logger.log(`Browser instance initialized`);
     } catch (e) {
@@ -123,6 +190,10 @@ export class CrawlerService {
 
     try {
       const page = await this.browser.newPage();
+      await page.setViewport({
+        width: this.viewportWith,
+        height: this.viewportHeight,
+      });
       page.on('response', addResponseSize);
       await page.goto(url);
       await page.waitForNetworkIdle({ timeout: 5000 });
