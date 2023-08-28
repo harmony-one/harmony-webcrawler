@@ -58,4 +58,13 @@ describe('AppController', () => {
       expect(data.elements.length).toBeGreaterThan(0);
     }, 30000);
   });
+
+  describe('parse Notion Embed', () => {
+    it('should return parsed data', async () => {
+      const data = await appController.parseContent(
+        'https://www.h.country/one-bot-upcoming-features-558b9dfa4401443bb1f4fd3a271edd44',
+      );
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 30000);
+  })
 });
