@@ -70,12 +70,12 @@ describe('AppController', () => {
     }, 30000);
   });
 
-  // describe('WSJ', () => {
-  //   it('should return parsed data', async () => {
-  //     const data = await appController.parseContent(
-  //       'https://www.wsj.com/us-news/climate-environment/heating-waters-force-change-in-industries-that-depend-on-the-ocean-efd471d6?mod=hp_lead_pos8',
-  //     );
-  //     expect(data.elements.length).toBeGreaterThan(0);
-  //   }, 90000);
-  // });
+  describe('WSJ', () => {
+    it('should return parsed data', async () => {
+      const data = await appController.parseContent(
+        'https://www.wsj.com/us-news/climate-environment/heating-waters-force-change-in-industries-that-depend-on-the-ocean-efd471d6?mod=hp_lead_pos8',
+      );
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 90000);
+  });
 });

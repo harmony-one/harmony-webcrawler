@@ -134,7 +134,7 @@ export class CrawlerService {
       await page.evaluateHandle((el) => el.click(), signIn);
 
       // await page.screenshot({ path: 'after_login.png' });
-      await page.waitForSelector('body .article-container');
+      await page.waitForSelector('.paywall');
 
       this.logger.log(`Logged in: ${pageConfig.type} as ${username}`);
     }
