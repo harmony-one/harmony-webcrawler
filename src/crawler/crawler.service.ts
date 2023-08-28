@@ -9,12 +9,13 @@ enum PageType {
 
 interface PageConfig {
   type: PageType;
-  selector: string;
+  pageSelector: string;
+  contentSelector: string;
 }
 
 const PAGE_CONFIGS = [
-  { type: PageType.Substack, selector: '.available-content h2, .available-content p, .available-content ul li' },
-  { type: PageType.Notion, selector: '.notion-page-content-inner *' },
+  { type: PageType.Notion, pageSelector: 'div.notion-page-content', contentSelector: '.notion-page-content-inner *' },
+  { type: PageType.Substack, pageSelector: 'div#entry div#main .available-content', contentSelector: '.available-content h2, .available-content p, .available-content ul li' },
 ]
 
 @Injectable()
@@ -23,7 +24,7 @@ export class CrawlerService {
 
   private async getConfig(page: Page) {
     for (const c of PAGE_CONFIGS) {
-      const selectorExists = await this.checkSelector(page, c.selector);
+      const selectorExists = await this.checkSelector(page, c.pageSelector);
       if (selectorExists) {
         return c;
       }c
@@ -45,7 +46,7 @@ export class CrawlerService {
   private async parse(page: Page, config: PageConfig) {
     this.logger.log(`Parsing page type: ${config.type}`);
     const parsedElements: PageElement[] = [];
-    const elements = await page.$$(config.selector);
+    const elements = await page.$$(config.contentSelector);
 
     for (const item of elements) {
       const text = await page.evaluate((el) => el.textContent, item);
