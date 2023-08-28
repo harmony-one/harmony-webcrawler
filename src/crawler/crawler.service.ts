@@ -34,7 +34,7 @@ const PAGE_CONFIGS = [
     pageSelector: '',
     pageUrlSelector: 'https://www.wsj.com',
     contentSelector:
-      '.article-container h1, .article-container h2, .crawler section p, .paywall p',
+      '.article-container h1, .article-container h2, .crawler h1, .crawler h2, .crawler section p, .paywall p',
   },
 ];
 
