@@ -3,14 +3,41 @@ import puppeteer, { Page } from 'puppeteer';
 import { PageElement, ParseResult } from '../types';
 import { ConfigService } from '@nestjs/config';
 
+enum PageType {
+  Substack = "Substack",
+  Notion = "Notion",
+  NotionEmbed = "NotionEmbed", // 1.country Notion embed
+}
+
+interface PageConfig {
+  type: PageType;
+  pageSelector: string;
+  contentSelector: string;
+}
+
+const PAGE_CONFIGS = [
+  { type: PageType.NotionEmbed, pageSelector: 'div.notion', contentSelector: '.notion-page-content-inner *' },
+  { type: PageType.Substack, pageSelector: 'div#entry div#main .available-content', contentSelector: '.available-content h2, .available-content p, .available-content ul li' },
+]
+
 @Injectable()
 export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
   constructor(private readonly configService: ConfigService) {}
 
-  private async isSubstack(page: Page) {
+  private async getConfig(page: Page) {
+    for (const c of PAGE_CONFIGS) {
+      const selectorExists = await this.checkSelector(page, c.pageSelector);
+      if (selectorExists) {
+        return c;
+      }c
+    }
+    return null;
+  }
+
+  private async checkSelector(page: Page, selector: string) {
     try {
-      await page.waitForSelector('div#entry div#main .available-content', {
+      await page.waitForSelector(selector, {
         timeout: 10000,
       });
     } catch (e) {
@@ -19,11 +46,10 @@ export class CrawlerService {
     return true;
   }
 
-  private async parseSubstack(page: Page) {
+  private async parse(page: Page, config: PageConfig) {
+    this.logger.log(`Parsing page type: ${config.type}`);
     const parsedElements: PageElement[] = [];
-    const selector =
-      '.available-content h2, .available-content p, .available-content ul li';
-    const elements = await page.$$(selector);
+    const elements = await page.$$(config.contentSelector);
 
     for (const item of elements) {
       const text = await page.evaluate((el) => el.textContent, item);
@@ -35,16 +61,17 @@ export class CrawlerService {
           tagName: tagName.toLowerCase(),
         });
       }
-    }
+   }
+
     return parsedElements;
   }
 
   private async parsePage(page: Page, url: string) {
-    const isSubstack = await this.isSubstack(page);
-    if (isSubstack) {
-      return this.parseSubstack(page);
+    const config = await this.getConfig(page);
+    if (config === null) {
+      throw new Error(`Unknown page type: ${url}`);
     }
-    return [];
+    return await this.parse(page, config);
   }
 
   public async getPageData(url: string): Promise<ParseResult> {
