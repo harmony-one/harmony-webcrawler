@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import puppeteer, { Page } from 'puppeteer';
+import puppeteer, { Page, Browser } from 'puppeteer';
 import { PageElement, ParseResult } from '../types';
 import { ConfigService } from '@nestjs/config';
 
@@ -32,7 +32,11 @@ const PAGE_CONFIGS = [
 @Injectable()
 export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
-  constructor(private readonly configService: ConfigService) {}
+  private browser: Browser;
+
+  constructor(private readonly configService: ConfigService) {
+    this.initBrowser();
+  }
 
   private async getConfig(page: Page) {
     for (const c of PAGE_CONFIGS) {
@@ -47,7 +51,7 @@ export class CrawlerService {
   private async checkSelector(page: Page, selector: string) {
     try {
       await page.waitForSelector(selector, {
-        timeout: 10000,
+        timeout: 1000,
       });
     } catch (e) {
       return false;
@@ -83,6 +87,24 @@ export class CrawlerService {
     return await this.parse(page, config);
   }
 
+  private async initBrowser() {
+    try {
+      this.browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-features=site-per-process',
+        ],
+      });
+      this.logger.log(`Browser instance initialized`);
+    } catch (e) {
+      this.logger.error(
+        `Failed to create a browser instance: ${(e as Error).message}`,
+      );
+    }
+  }
+
   public async getPageData(url: string): Promise<ParseResult> {
     const timeStart = Date.now();
     let networkTraffic = 0;
@@ -95,20 +117,15 @@ export class CrawlerService {
       } catch {}
     }
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-features=site-per-process',
-      ],
-    });
+    if (!this.browser) {
+      await this.initBrowser();
+    }
 
     try {
-      const page = await browser.newPage();
+      const page = await this.browser.newPage();
       page.on('response', addResponseSize);
       await page.goto(url);
-      await page.waitForNetworkIdle({ timeout: 10000 });
+      await page.waitForNetworkIdle({ timeout: 5000 });
       elements = await this.parsePage(page, url);
       page.off('response', addResponseSize);
     } catch (e) {
@@ -116,8 +133,8 @@ export class CrawlerService {
         `Failed to fetch page content: ${(e as Error).message}`,
       );
     } finally {
-      await browser.close();
-      this.logger.log(`Browser closed`);
+      // await this.browser.close();
+      // this.logger.log(`Browser closed`);
     }
     return {
       elements,

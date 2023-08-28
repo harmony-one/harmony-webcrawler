@@ -68,5 +68,5 @@ describe('AppController', () => {
       );
       expect(data.elements.length).toBeGreaterThan(0);
     }, 30000);
-  })
+  });
 });
