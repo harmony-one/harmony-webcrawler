@@ -5,6 +5,7 @@ import { PageElement, ParseResult } from '../types';
 enum PageType {
   Substack = "Substack",
   Notion = "Notion",
+  NotionEmbed = "NotionEmbed", // 1.country Notion embed
 }
 
 interface PageConfig {
@@ -14,7 +15,7 @@ interface PageConfig {
 }
 
 const PAGE_CONFIGS = [
-  { type: PageType.Notion, pageSelector: 'div.notion-page-content', contentSelector: '.notion-page-content-inner *' },
+  { type: PageType.NotionEmbed, pageSelector: 'div.notion', contentSelector: '.notion-page-content-inner *' },
   { type: PageType.Substack, pageSelector: 'div#entry div#main .available-content', contentSelector: '.available-content h2, .available-content p, .available-content ul li' },
 ]
 
