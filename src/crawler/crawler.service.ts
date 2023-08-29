@@ -94,7 +94,7 @@ export class CrawlerService {
     return parsedElements;
   }
 
-  private async signIn(page: Page, pageUrl: string, pageConfig: PageConfig) {
+  private async signIn(page: Page, pageConfig: PageConfig) {
     if (pageConfig.type === PageType.WSJ) {
       const username = this.configService.get('wsj.username');
       const password = this.configService.get('wsj.password');
@@ -114,11 +114,10 @@ export class CrawlerService {
       this.logger.log(`Login link: ${href}`);
       await page.goto(href);
       await page.waitForSelector('button.continue-submit');
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1000);
 
       await page.waitForSelector('input#password-login-username');
       await page.type('input#password-login-username', username);
-      await page.waitForTimeout(1000);
 
       await page.click('button.continue-submit');
       await page.waitForTimeout(1000);
@@ -132,11 +131,9 @@ export class CrawlerService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       await page.evaluateHandle((el) => el.click(), signIn);
-
-      // await page.screenshot({ path: 'after_login.png' });
       await page.waitForSelector('.paywall');
 
-      this.logger.log(`Logged in: ${pageConfig.type} as ${username}`);
+      this.logger.log(`Logged in ${pageConfig.type} as ${username}`);
     }
   }
 
@@ -146,7 +143,7 @@ export class CrawlerService {
       throw new Error(`Unknown page type: ${url}`);
     }
     this.logger.log(`Using parse config: ${JSON.stringify(config)}`);
-    await this.signIn(page, url, config);
+    await this.signIn(page, config);
     return await this.parse(page, config);
   }
 
@@ -204,10 +201,8 @@ export class CrawlerService {
       this.logger.error(
         `Failed to fetch page content: ${(e as Error).message}`,
       );
-    } finally {
-      // await this.browser.close();
-      // this.logger.log(`Browser closed`);
     }
+
     return {
       elements,
       elapsedTime: Date.now() - timeStart,

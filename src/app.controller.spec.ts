@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Logger } from '@nestjs/common';
 import { CrawlerService } from './crawler/crawler.service';
-import { JobsService } from './jobs/jobs.service';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
@@ -22,7 +21,7 @@ describe('AppController', () => {
         ScheduleModule.forRoot(),
       ],
       controllers: [AppController],
-      providers: [CrawlerService, AppService, Logger, JobsService],
+      providers: [CrawlerService, AppService, Logger],
     }).compile();
 
     appController = app.get<AppController>(AppController);
@@ -61,7 +60,7 @@ describe('AppController', () => {
     }, 30000);
   });
 
-  describe('parse Notion Embed', () => {
+  describe('parse Notion Embed 1', () => {
     it('should return parsed data', async () => {
       const data = await appController.parseContent(
         'https://www.h.country/one-bot-upcoming-features-558b9dfa4401443bb1f4fd3a271edd44',
@@ -70,12 +69,26 @@ describe('AppController', () => {
     }, 30000);
   });
 
-  describe('WSJ', () => {
+  describe('parse Notion Embed 2', () => {
     it('should return parsed data', async () => {
-      const data = await appController.parseContent(
-        'https://www.wsj.com/us-news/climate-environment/heating-waters-force-change-in-industries-that-depend-on-the-ocean-efd471d6?mod=hp_lead_pos8',
-      );
+      const data = await appController.parseContent('https://harmony.one');
       expect(data.elements.length).toBeGreaterThan(0);
-    }, 90000);
+    }, 30000);
   });
+
+  describe('parse Notion Embed 3', () => {
+    it('should return parsed data', async () => {
+      const data = await appController.parseContent('https://harmony.one/dear');
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 30000);
+  });
+
+  // describe('WSJ', () => {
+  //   it('should return parsed data', async () => {
+  //     const data = await appController.parseContent(
+  //       'https://www.wsj.com/us-news/climate-environment/heating-waters-force-change-in-industries-that-depend-on-the-ocean-efd471d6?mod=hp_lead_pos8',
+  //     );
+  //     expect(data.elements.length).toBeGreaterThan(0);
+  //   }, 90000);
+  // });
 });
