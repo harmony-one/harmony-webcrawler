@@ -8,6 +8,7 @@ enum PageType {
   Notion = 'Notion',
   NotionEmbed = 'NotionEmbed', // 1.country Notion embed
   WSJ = 'WSJ', // https://www.wsj.com
+  default = 'default',
 }
 
 interface PageConfig {
@@ -35,6 +36,11 @@ const PAGE_CONFIGS = [
     pageUrlSelector: 'https://www.wsj.com',
     contentSelector:
       '.article-container h1, .article-container h2, .crawler h1, .crawler h2, .crawler section p, .paywall p',
+  },
+  {
+    type: PageType.default,
+    pageSelector: 'body',
+    contentSelector: 'body h1, body h2, body p, body ul li',
   },
 ];
 
@@ -74,19 +80,26 @@ export class CrawlerService {
     return true;
   }
 
+  private trimText(text: string) {
+    return text.trim().replaceAll(/\n\s{2,}/g, '');
+  }
+
   private async parse(page: Page, config: PageConfig) {
     this.logger.log(`Parsing page type: ${config.type}`);
     const parsedElements: PageElement[] = [];
     const elements = await page.$$(config.contentSelector);
 
     for (const item of elements) {
-      const text = await page.evaluate((el) => el.textContent, item);
-      const tagName = await page.evaluate((el) => el.tagName, item);
+      const rawText = await page.evaluate((el) => el.textContent, item);
+      const rawTagName = await page.evaluate((el) => el.tagName, item);
+
+      const text = this.trimText(rawText || '');
+      const tagName = this.trimText((rawTagName || '').toLowerCase());
 
       if (text) {
         parsedElements.push({
           text,
-          tagName: tagName.toLowerCase(),
+          tagName,
         });
       }
     }
@@ -208,6 +221,7 @@ export class CrawlerService {
       timestamp: Date.now(),
       elapsedTime: Date.now() - timeStart,
       networkTraffic,
+      elementsCount: elements.length,
       elements,
     };
   }

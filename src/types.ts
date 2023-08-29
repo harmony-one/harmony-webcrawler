@@ -4,8 +4,9 @@ export interface PageElement {
 }
 
 export interface ParseResult {
-  elements: PageElement[];
   elapsedTime: number;
   networkTraffic: number;
   timestamp: number;
+  elementsCount: number;
+  elements: PageElement[];
 }
