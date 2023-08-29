@@ -193,7 +193,8 @@ export class CrawlerService {
       });
       page.on('response', addResponseSize);
       await page.goto(url);
-      await page.waitForNetworkIdle({ timeout: 5000 });
+      await page.waitForTimeout(1000); // For pages with redirects
+      await page.waitForNetworkIdle({ timeout: 10000 });
       elements = await this.parsePage(page, url);
       page.off('response', addResponseSize);
       await page.close();
@@ -204,9 +205,10 @@ export class CrawlerService {
     }
 
     return {
-      elements,
+      timestamp: Date.now(),
       elapsedTime: Date.now() - timeStart,
       networkTraffic,
+      elements,
     };
   }
 }
