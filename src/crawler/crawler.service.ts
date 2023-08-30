@@ -36,7 +36,7 @@ const PAGE_CONFIGS = [
     pageSelector: '',
     pageUrlSelector: 'https://www.wsj.com',
     contentSelector:
-      '.article-container h1, .article-container h2, .crawler h1, .crawler h2, .crawler section p, .paywall p',
+      '.article-container h1, .article-container h2, .article-container p',
   },
   {
     type: PageType.default,
@@ -116,6 +116,7 @@ export class CrawlerService {
       await page.addStyleTag({
         content: '{scroll-behavior: auto !important;}',
       });
+      await page.waitForTimeout(2000);
       await page.waitForSelector('header a');
 
       const textToFind = 'Sign In';
@@ -128,13 +129,14 @@ export class CrawlerService {
       this.logger.log(`Login link: ${href}`);
       await page.goto(href);
       await page.waitForSelector('button.continue-submit');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(2000);
 
       await page.waitForSelector('input#password-login-username');
       await page.type('input#password-login-username', username);
+      // await page.waitForTimeout(1000);
 
       await page.click('button.continue-submit');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(2000);
 
       await page.waitForSelector('input#password-login-password');
       await page.type('input#password-login-password', password);
@@ -145,7 +147,7 @@ export class CrawlerService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       await page.evaluateHandle((el) => el.click(), signIn);
-      await page.waitForSelector('.paywall');
+      await page.waitForSelector('.article-container', { timeout: 10000 });
 
       this.logger.log(`Logged in ${pageConfig.type} as ${username}`);
     }
