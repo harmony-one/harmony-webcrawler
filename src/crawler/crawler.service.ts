@@ -116,7 +116,7 @@ export class CrawlerService {
       await page.addStyleTag({
         content: '{scroll-behavior: auto !important;}',
       });
-      // await page.waitForTimeout(2000);
+      await page.waitForTimeout(1000);
       await page.waitForSelector('header a');
 
       const textToFind = 'Sign In';
