@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import puppeteer, { Page, Browser } from 'puppeteer';
 import { PageElement, ParseResult } from '../types';
 import { ConfigService } from '@nestjs/config';
+import { ParseDto } from '../dto/parse.dto';
 
 enum PageType {
   Substack = 'Substack',
@@ -107,10 +108,10 @@ export class CrawlerService {
     return parsedElements;
   }
 
-  private async signIn(page: Page, pageConfig: PageConfig) {
+  private async signIn(dto: ParseDto, page: Page, pageConfig: PageConfig) {
     if (pageConfig.type === PageType.WSJ) {
-      const username = this.configService.get('wsj.username');
-      const password = this.configService.get('wsj.password');
+      const username = dto.username || this.configService.get('wsj.username');
+      const password = dto.password || this.configService.get('wsj.password');
 
       await page.addStyleTag({
         content: '{scroll-behavior: auto !important;}',
@@ -150,13 +151,13 @@ export class CrawlerService {
     }
   }
 
-  private async parsePage(page: Page, url: string) {
-    const config = await this.getConfig(page, url);
+  private async parsePage(dto: ParseDto, page: Page) {
+    const config = await this.getConfig(page, dto.url);
     if (config === null) {
-      throw new Error(`Unknown page type: ${url}`);
+      throw new Error(`Unknown page type: ${dto.url}`);
     }
     this.logger.log(`Using parse config: ${JSON.stringify(config)}`);
-    await this.signIn(page, config);
+    await this.signIn(dto, page, config);
     return await this.parse(page, config);
   }
 
@@ -182,7 +183,9 @@ export class CrawlerService {
     }
   }
 
-  public async getPageData(url: string): Promise<ParseResult> {
+  public async getPageData(dto: ParseDto): Promise<ParseResult> {
+    const { url } = dto;
+
     const timeStart = Date.now();
     let networkTraffic = 0;
     let elements: PageElement[] = [];
@@ -208,7 +211,7 @@ export class CrawlerService {
       await page.goto(url);
       await page.waitForTimeout(1000); // For pages with redirects
       await page.waitForNetworkIdle({ timeout: 10000 });
-      elements = await this.parsePage(page, url);
+      elements = await this.parsePage(dto, page);
       page.off('response', addResponseSize);
       await page.close();
     } catch (e) {

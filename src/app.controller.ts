@@ -11,6 +11,7 @@ import { ParseResult } from './types';
 import { CrawlerService } from './crawler/crawler.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
+import { ParseDto } from './dto/parse.dto';
 
 @Controller()
 export class AppController {
@@ -29,17 +30,15 @@ export class AppController {
   @Get('/parse')
   @CacheTTL(60 * 60 * 1000)
   @UseInterceptors(CacheInterceptor)
-  async parseContent(@Query('url') url: string): Promise<ParseResult> {
-    if (!url) {
-      throw new BadRequestException('Url is missing');
-    }
-    if (!url.includes('http')) {
-      throw new BadRequestException('Wrong url');
-    }
-    this.logger.log(`Start parsing ${url}...`);
-    const data = await this.crawlerService.getPageData(url);
+  async parseContent(@Query() dto: ParseDto): Promise<ParseResult> {
+    this.logger.log(`Start parsing URL "${dto.url}"...`);
+    const data = await this.crawlerService.getPageData(dto);
+
     this.logger.log(
-      `Parsing completed ${url}. Page elements: ${data.elements.length}, elapsed time: ${data.elapsedTime}, network traffic: ${data.networkTraffic}.`,
+      `Parsing completed ${dto.url}.` +
+        `Page elements: ${data.elements.length},` +
+        `elapsed time: ${data.elapsedTime},` +
+        `network traffic: ${data.networkTraffic}.`,
     );
     return data;
   }
