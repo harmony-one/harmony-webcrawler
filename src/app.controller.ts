@@ -35,9 +35,9 @@ export class AppController {
     const data = await this.crawlerService.getPageData(dto);
 
     this.logger.log(
-      `Parsing completed ${dto.url}.` +
-        `Page elements: ${data.elements.length},` +
-        `elapsed time: ${data.elapsedTime},` +
+      `Parsing completed ${dto.url}. ` +
+        `Page elements: ${data.elements.length}, ` +
+        `elapsed time: ${data.elapsedTime}, ` +
         `network traffic: ${data.networkTraffic}.`,
     );
     return data;

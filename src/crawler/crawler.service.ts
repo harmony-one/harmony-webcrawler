@@ -36,7 +36,7 @@ const PAGE_CONFIGS = [
     pageSelector: '',
     pageUrlSelector: 'https://www.wsj.com',
     contentSelector:
-      '.article-container h1, .article-container h2, .article-container p, .layout-grid h1, .layout-grid h2, .layout-grid p',
+      '.article-container h1, .article-container h2, .article-container p, .layout-grid h1, .layout-grid h2, .layout-grid p, .crawler h1, .crawler h2, .crawler p',
   },
   {
     type: PageType.default,
@@ -116,7 +116,7 @@ export class CrawlerService {
       await page.addStyleTag({
         content: '{scroll-behavior: auto !important;}',
       });
-      await page.waitForTimeout(2000);
+      // await page.waitForTimeout(2000);
       await page.waitForSelector('header a');
 
       const textToFind = 'Sign In';
@@ -149,7 +149,7 @@ export class CrawlerService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       await page.evaluateHandle((el) => el.click(), signIn);
-      await page.waitForSelector('.article-container, .layout-grid', {
+      await page.waitForSelector('.article-container, .layout-grid, .crawler', {
         timeout: 10000,
       });
 
