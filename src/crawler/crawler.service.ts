@@ -116,26 +116,16 @@ export class CrawlerService {
       await page.addStyleTag({
         content: '{scroll-behavior: auto !important;}',
       });
-      await page.waitForTimeout(1000);
-      await page.waitForSelector('header a');
 
-      const textToFind = 'Sign In';
-      const link = await page.evaluateHandle(
-        (text) =>
-          [...document.querySelectorAll('a')].find(
-            (a) => a.innerText === text && a.href,
-          ),
-        textToFind,
-      );
-      const href = await page.evaluate((el) => el.href, link);
-      this.logger.log(`Login link: ${href}`);
-      await page.goto(href);
+      const loginLink = 'https://accounts.wsj.com/login';
+      this.logger.log(`Login link: ${loginLink}`);
+      await page.goto(loginLink);
+      await page.waitForTimeout(2000);
       await page.waitForSelector('button.continue-submit');
       await page.waitForTimeout(2000);
 
       await page.waitForSelector('input#password-login-username');
       await page.type('input#password-login-username', username);
-      // await page.waitForTimeout(1000);
 
       await page.click('button.continue-submit');
       await page.waitForTimeout(2000);
@@ -149,6 +139,8 @@ export class CrawlerService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       await page.evaluateHandle((el) => el.click(), signIn);
+      await page.waitForSelector('main#main');
+      await page.goto(dto.url);
       await page.waitForSelector('.article-container, .layout-grid, .crawler', {
         timeout: 10000,
       });
