@@ -120,7 +120,7 @@ export class CrawlerService {
       const loginLink = 'https://accounts.wsj.com/login';
       this.logger.log(`Login link: ${loginLink}`);
       await page.goto(loginLink);
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(3000);
       await page.waitForSelector('button.continue-submit');
       await page.waitForTimeout(2000);
 
