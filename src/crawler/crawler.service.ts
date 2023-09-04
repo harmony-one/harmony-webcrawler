@@ -5,17 +5,18 @@ import { ConfigService } from '@nestjs/config';
 import { ParseDto } from '../dto/parse.dto';
 
 enum PageType {
+  default = 'default',
   Substack = 'Substack',
   Notion = 'Notion',
   NotionEmbed = 'NotionEmbed', // 1.country Notion embed
   WSJ = 'WSJ', // https://www.wsj.com
-  default = 'default',
+  twitter = 'twitter',
 }
 
 interface PageConfig {
   type: PageType;
-  pageSelector: string;
-  pageUrlSelector?: string;
+  pageSelector?: string;
+  pageUrl?: string;
   contentSelector: string;
 }
 
@@ -33,10 +34,14 @@ const PAGE_CONFIGS = [
   },
   {
     type: PageType.WSJ,
-    pageSelector: '',
-    pageUrlSelector: 'https://www.wsj.com',
+    pageUrl: 'https://www.wsj.com',
     contentSelector:
       '.article-container h1, .article-container h2, .article-container p, .layout-grid h1, .layout-grid h2, .layout-grid p, .crawler h1, .crawler h2, .crawler p',
+  },
+  {
+    type: PageType.twitter,
+    pageUrl: 'https://twitter.com',
+    contentSelector: 'body div[dir="auto"] span',
   },
   {
     type: PageType.default,
@@ -58,7 +63,7 @@ export class CrawlerService {
 
   private async getConfig(page: Page, pageUrl: string) {
     for (const c of PAGE_CONFIGS) {
-      const urlExists = pageUrl.startsWith(c.pageUrlSelector);
+      const urlExists = pageUrl.startsWith(c.pageUrl);
       if (urlExists) {
         return c;
       }
@@ -201,6 +206,12 @@ export class CrawlerService {
 
     try {
       const page = await this.browser.newPage();
+
+      // Set user agent for Twitter
+      await page.setUserAgent(
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
+      );
+
       await page.setViewport({
         width: this.viewportWith,
         height: this.viewportHeight,

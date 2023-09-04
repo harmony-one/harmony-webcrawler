@@ -124,4 +124,20 @@ describe('AppController', () => {
   //     expect(data.elements.length).toBeGreaterThan(0);
   //   }, 90000);
   // });
+
+  describe('Twitter', () => {
+    it('should parse tweet', async () => {
+      const data = await appController.parseContent({
+        url: 'https://twitter.com/harmonyprotocol/status/1696648591685886213?s=46&t=zj2jAM0qpe5fipIoj7gbBA',
+      });
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 30000);
+
+    it('should parse tweet', async () => {
+      const data = await appController.parseContent({
+        url: 'https://twitter.com/harmonyprotocol/status/1696648591685886213?s=46&t=zj2jAM0qpe5fipIoj7gbBA',
+      });
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 30000);
+  });
 });
