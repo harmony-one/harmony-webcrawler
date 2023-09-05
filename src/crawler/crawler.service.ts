@@ -44,6 +44,11 @@ const PAGE_CONFIGS = [
     contentSelector: 'body div[dir="auto"] span',
   },
   {
+    type: PageType.twitter,
+    pageUrl: 'https://x.com',
+    contentSelector: 'body div[dir="auto"] span',
+  },
+  {
     type: PageType.default,
     pageSelector: 'body',
     contentSelector: 'body h1, body h2, body p, body ul li',
