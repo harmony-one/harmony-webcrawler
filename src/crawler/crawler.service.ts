@@ -11,6 +11,7 @@ enum PageType {
   NotionEmbed = 'NotionEmbed', // 1.country Notion embed
   WSJ = 'WSJ', // https://www.wsj.com
   twitter = 'twitter',
+  superSo = 'superSo',
 }
 
 interface PageConfig {
@@ -47,6 +48,12 @@ const PAGE_CONFIGS = [
     type: PageType.twitter,
     pageUrl: 'https://x.com',
     contentSelector: 'body div[dir="auto"] span',
+  },
+  {
+    type: PageType.superSo,
+    pageSelector: '.super-content-wrapper .super-content',
+    contentSelector:
+      '.super-content-wrapper .super-content .notion-semantic-string span',
   },
   {
     type: PageType.default,
@@ -209,9 +216,8 @@ export class CrawlerService {
       await this.initBrowser();
     }
 
+    const page = await this.browser.newPage();
     try {
-      const page = await this.browser.newPage();
-
       // Set user agent for Twitter
       await page.setUserAgent(
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
@@ -227,11 +233,12 @@ export class CrawlerService {
       await page.waitForNetworkIdle({ timeout: 10000 });
       elements = await this.parsePage(dto, page);
       page.off('response', addResponseSize);
-      await page.close();
     } catch (e) {
       this.logger.error(
         `Failed to fetch page content: ${(e as Error).message}`,
       );
+    } finally {
+      await page.close();
     }
 
     return {

@@ -140,4 +140,20 @@ describe('AppController', () => {
       expect(data.elements.length).toBeGreaterThan(0);
     }, 30000);
   });
+
+  describe('Super.so', () => {
+    it('should parse https://howarths.super.site', async () => {
+      const data = await appController.parseContent({
+        url: 'https://howarths.super.site',
+      });
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 30000);
+
+    it('should parse https://fairnessfoundation.com/fairness-index/foreword', async () => {
+      const data = await appController.parseContent({
+        url: 'https://fairnessfoundation.com/fairness-index/foreword',
+      });
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 30000);
+  });
 });
