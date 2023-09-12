@@ -56,6 +56,15 @@ describe('AppController', () => {
     }, 30000);
   });
 
+  describe('Notion', () => {
+    it('should parse notion page', async () => {
+      const data = await appController.parseContent({
+        url: 'https://www.notion.so/harmonyone/b3bb4a64250a4eaf95e0eafd4b933f90?v=e49f044b1bf4486988306f161981e733',
+      });
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 30000);
+  });
+
   describe('Notion Embed', () => {
     it('should return parsed data', async () => {
       const data = await appController.parseContent({

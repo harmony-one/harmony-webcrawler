@@ -23,6 +23,11 @@ interface PageConfig {
 
 const PAGE_CONFIGS = [
   {
+    type: PageType.Notion,
+    pageSelector: '#notion-app .notion-app-inner',
+    contentSelector: 'h1, h2, h3, blockquote div, div[data-block-id] div',
+  },
+  {
     type: PageType.NotionEmbed,
     pageSelector: 'div.notion',
     contentSelector: '.notion-page-content-inner *',
