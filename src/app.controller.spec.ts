@@ -165,4 +165,13 @@ describe('AppController', () => {
       expect(data.elements.length).toBeGreaterThan(0);
     }, 30000);
   });
+
+  describe('weather.com', () => {
+    it('should parse page', async () => {
+      const data = await appController.parseContent({
+        url: 'https://weather.com/en-CA/weather/tenday/l/667d0d17672cf04f19f320d981e1a41c1de1cef47193b8879646b77ab2689e18',
+      });
+      expect(data.elements.length).toBeGreaterThan(0);
+    }, 30000);
+  });
 });

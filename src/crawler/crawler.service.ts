@@ -12,6 +12,7 @@ enum PageType {
   WSJ = 'WSJ', // https://www.wsj.com
   twitter = 'twitter',
   superSo = 'superSo',
+  weatherDotCom = 'weatherDotCom',
 }
 
 interface PageConfig {
@@ -59,6 +60,12 @@ const PAGE_CONFIGS = [
     pageSelector: '.super-content-wrapper .super-content',
     contentSelector:
       '.super-content-wrapper .super-content .notion-semantic-string span',
+  },
+  {
+    type: PageType.weatherDotCom,
+    pageSelector: '.appWrapper #MainContent',
+    contentSelector:
+      '[data-testid="DailyContent"]:first-child h3, [data-testid="DailyContent"]:first-child [data-testid="TemperatureValue"], [data-testid="DailyContent"]:first-child [data-testid="daypartName"]',
   },
   {
     type: PageType.default,
