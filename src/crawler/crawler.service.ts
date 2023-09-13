@@ -63,9 +63,9 @@ const PAGE_CONFIGS = [
   },
   {
     type: PageType.weatherDotCom,
-    pageSelector: '.appWrapper #MainContent',
+    pageUrl: 'https://weather.com',
     contentSelector:
-      '[data-testid="DailyContent"]:first-child h3, [data-testid="DailyContent"]:first-child [data-testid="TemperatureValue"], [data-testid="DailyContent"]:first-child [data-testid="daypartName"]',
+      '[data-testid="PresentationName"], [data-testid="DailyContent"]:first-child h3, [data-testid="DailyContent"]:first-child [data-testid="TemperatureValue"], [data-testid="DailyContent"]:first-child [data-testid="daypartName"], #todayDetails [data-testid="HeaderTitle"] h2, #todayDetails [data-testid="TemperatureValue"]',
   },
   {
     type: PageType.default,
@@ -102,7 +102,7 @@ export class CrawlerService {
   private async checkSelector(page: Page, selector: string) {
     try {
       await page.waitForSelector(selector, {
-        timeout: 1000,
+        timeout: 2000,
       });
     } catch (e) {
       return false;
@@ -241,8 +241,10 @@ export class CrawlerService {
       });
       page.on('response', addResponseSize);
       await page.goto(url);
-      await page.waitForTimeout(1000); // For pages with redirects
-      await page.waitForNetworkIdle({ timeout: 10000 });
+      await page.waitForTimeout(2000); // For pages with redirects
+      if (!url.includes('weather.com')) {
+        await page.waitForNetworkIdle({ timeout: 10000 });
+      }
       elements = await this.parsePage(dto, page);
       page.off('response', addResponseSize);
     } catch (e) {

@@ -28,7 +28,7 @@ export class AppController {
   }
 
   @Get('/parse')
-  @CacheTTL(60 * 60 * 1000)
+  @CacheTTL(30 * 1000)
   @UseInterceptors(CacheInterceptor)
   async parseContent(@Query() dto: ParseDto): Promise<ParseResult> {
     this.logger.log(`Start parsing URL "${dto.url}"...`);
