@@ -65,7 +65,7 @@ const PAGE_CONFIGS = [
     type: PageType.weatherDotCom,
     pageUrl: 'https://weather.com',
     contentSelector:
-      '[data-testid="PresentationName"], [data-testid="DailyContent"]:first-child h3, [data-testid="DailyContent"]:first-child [data-testid="TemperatureValue"], [data-testid="DailyContent"]:first-child [data-testid="daypartName"], #todayDetails [data-testid="HeaderTitle"] h2, #todayDetails [data-testid="TemperatureValue"]',
+      '[data-testid="PresentationName"], [data-testid="DailyContent"]:first-child h3, [data-testid="DailyContent"]:first-child [data-testid="TemperatureValue"], [data-testid="DailyContent"]:first-child [data-testid="daypartName"], #todayDetails [data-testid="HeaderTitle"] h2, #todayDetails [data-testid="TemperatureValue"], [data-testid="DailyForecast"] h1 strong, [data-testid="ctaButton"] [class^="CalendarDateCell--tempHigh"] [data-testid="TemperatureValue"]',
   },
   {
     type: PageType.default,
