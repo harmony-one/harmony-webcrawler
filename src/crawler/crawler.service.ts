@@ -159,9 +159,9 @@ export class CrawlerService {
       const loginLink = 'https://accounts.wsj.com/login';
       this.logger.log(`Login link: ${loginLink}`);
       await page.goto(loginLink);
-      await page.waitForTimeout(5000);
+      await page.waitForTimeout(6000);
       await page.waitForSelector('button.continue-submit');
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(3000);
 
       await page.waitForSelector('input#password-login-username');
       await page.type('input#password-login-username', username);
@@ -287,7 +287,7 @@ export class CrawlerService {
         `Failed to fetch page content: ${(e as Error).message}`,
       );
     } finally {
-      if (pageConfig && pageConfig.type === PageType.WSJ) {
+      if (pageConfig && pageConfig.type === PageType.WSJ && elements.length > 0) {
         const cookies = await page.cookies();
         this.loggedPagesPool.set(PageType.WSJ, {
           type: pageConfig.type,
