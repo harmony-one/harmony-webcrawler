@@ -71,7 +71,7 @@ const PAGE_CONFIGS = [
   {
     type: PageType.default,
     pageSelector: 'body',
-    contentSelector: 'body h1, body h2, body p, body ul li',
+    contentSelector: 'h1, h2, h3, body p, body ul li',
   },
 ];
 
@@ -179,10 +179,10 @@ export class CrawlerService {
       // @ts-ignore
       await page.evaluateHandle((el) => el.click(), signIn);
       await page.waitForSelector('main#main');
-      await page.goto(dto.url);
-      await page.waitForSelector('.article-container, .layout-grid, .crawler', {
-        timeout: 10000,
-      });
+      // await page.goto(dto.url);
+      // await page.waitForSelector('.article-container, .layout-grid, .crawler', {
+      //   timeout: 10000,
+      // });
       this.logger.log(`Logged in as ${username}`);
     }
   }
@@ -270,7 +270,7 @@ export class CrawlerService {
     let pageConfig: PageConfig;
     try {
       page.on('response', addResponseSize);
-      await page.goto(url);
+      await page.goto(url, { waitUntil: 'load' });
 
       await page.waitForTimeout(2000); // For pages with redirects
 
