@@ -28,8 +28,8 @@ export class AppController {
   }
 
   @Get('/parse')
-  @CacheTTL(30 * 1000)
-  @UseInterceptors(CacheInterceptor)
+  // @CacheTTL(30 * 1000)
+  // @UseInterceptors(CacheInterceptor)
   async parseContent(@Query() dto: ParseDto): Promise<ParseResult> {
     this.logger.log(`Start parsing URL "${dto.url}"...`);
     const data = await this.crawlerService.getPageData(dto);

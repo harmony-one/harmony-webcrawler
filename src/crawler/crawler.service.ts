@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import puppeteer, { Page, Browser } from 'puppeteer';
+import puppeteer, { Page, Browser, Protocol } from 'puppeteer';
+import { LRUCache } from 'lru-cache';
 import { PageElement, ParseResult } from '../types';
 import { ConfigService } from '@nestjs/config';
 import { ParseDto } from '../dto/parse.dto';
@@ -74,12 +75,21 @@ const PAGE_CONFIGS = [
   },
 ];
 
+interface PagePoolData {
+  type: PageType;
+  cookies: Protocol.Network.Cookie[];
+}
+
 @Injectable()
 export class CrawlerService {
   viewportWith = 1024;
   viewportHeight = 1600;
   private readonly logger = new Logger(CrawlerService.name);
   private browser: Browser;
+  private loggedPagesPool: LRUCache<PageType, PagePoolData> = new LRUCache({
+    ttl: 1000 * 60 * 60 * 8,
+    max: 100,
+  });
 
   constructor(private readonly configService: ConfigService) {
     this.initBrowser();
@@ -137,8 +147,8 @@ export class CrawlerService {
     return parsedElements;
   }
 
-  private async signIn(dto: ParseDto, page: Page, pageConfig: PageConfig) {
-    if (pageConfig.type === PageType.WSJ) {
+  private async signIn(dto: ParseDto, page: Page) {
+    if (dto.url.includes('https://wsj.com')) {
       const username = dto.username || this.configService.get('wsj.username');
       const password = dto.password || this.configService.get('wsj.password');
 
@@ -149,7 +159,7 @@ export class CrawlerService {
       const loginLink = 'https://accounts.wsj.com/login';
       this.logger.log(`Login link: ${loginLink}`);
       await page.goto(loginLink);
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(5000);
       await page.waitForSelector('button.continue-submit');
       await page.waitForTimeout(2000);
 
@@ -173,19 +183,16 @@ export class CrawlerService {
       await page.waitForSelector('.article-container, .layout-grid, .crawler', {
         timeout: 10000,
       });
-
-      this.logger.log(`Logged in ${pageConfig.type} as ${username}`);
+      this.logger.log(`Logged in as ${username}`);
     }
   }
 
-  private async parsePage(dto: ParseDto, page: Page) {
+  private async getPageConfig(dto: ParseDto, page: Page) {
     const config = await this.getConfig(page, dto.url);
     if (config === null) {
       throw new Error(`Unknown page type: ${dto.url}`);
     }
-    this.logger.log(`Using parse config: ${JSON.stringify(config)}`);
-    await this.signIn(dto, page, config);
-    return await this.parse(page, config);
+    return config;
   }
 
   private async initBrowser() {
@@ -210,6 +217,37 @@ export class CrawlerService {
     }
   }
 
+  private async getPage(dto: ParseDto) {
+    if (dto.url.includes('wsj.com')) {
+      const loggedPageData = this.loggedPagesPool.get(PageType.WSJ);
+      if (loggedPageData) {
+        this.logger.log(
+          `Using page cookies with type ${loggedPageData.type} from logged pages pool`,
+        );
+        const page = await this.browser.newPage();
+        await page.setCookie(...loggedPageData.cookies);
+        return page;
+      }
+    }
+
+    this.logger.log(`Created new page instance`);
+    const page = await this.browser.newPage();
+
+    // Set user agent for Twitter
+    await page.setUserAgent(
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
+    );
+
+    await page.setViewport({
+      width: this.viewportWith,
+      height: this.viewportHeight,
+    });
+
+    await this.signIn(dto, page);
+
+    return page;
+  }
+
   public async getPageData(dto: ParseDto): Promise<ParseResult> {
     const { url } = dto;
 
@@ -228,30 +266,37 @@ export class CrawlerService {
       await this.initBrowser();
     }
 
-    const page = await this.browser.newPage();
+    const page = await this.getPage(dto);
+    let pageConfig: PageConfig;
     try {
-      // Set user agent for Twitter
-      await page.setUserAgent(
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
-      );
-
-      await page.setViewport({
-        width: this.viewportWith,
-        height: this.viewportHeight,
-      });
       page.on('response', addResponseSize);
       await page.goto(url);
+
       await page.waitForTimeout(2000); // For pages with redirects
+
       if (!url.includes('weather.com')) {
         await page.waitForNetworkIdle({ timeout: 10000 });
       }
-      elements = await this.parsePage(dto, page);
+      pageConfig = await this.getPageConfig(dto, page);
+
+      this.logger.log(`Using parse config: ${JSON.stringify(pageConfig)}`);
+      elements = await this.parse(page, pageConfig);
       page.off('response', addResponseSize);
     } catch (e) {
       this.logger.error(
         `Failed to fetch page content: ${(e as Error).message}`,
       );
     } finally {
+      if (pageConfig && pageConfig.type === PageType.WSJ) {
+        const cookies = await page.cookies();
+        this.loggedPagesPool.set(PageType.WSJ, {
+          type: pageConfig.type,
+          cookies,
+        });
+        this.logger.log(
+          `Page with type "${pageConfig.type}" added to logged pages pool`,
+        );
+      }
       await page.close();
     }
 
