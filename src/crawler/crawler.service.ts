@@ -71,7 +71,7 @@ const PAGE_CONFIGS = [
   {
     type: PageType.default,
     pageSelector: 'body',
-    contentSelector: 'h1, h2, h3, body p, body ul li',
+    contentSelector: 'h1, h2, h3, body p, body ul li, table td, body span',
   },
 ];
 
@@ -87,7 +87,7 @@ export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
   private browser: Browser;
   private loggedPagesPool: LRUCache<PageType, PagePoolData> = new LRUCache({
-    ttl: 1000 * 60 * 60 * 8,
+    ttl: 1000 * 60 * 60 * 24,
     max: 100,
   });
 
@@ -268,6 +268,8 @@ export class CrawlerService {
 
     const page = await this.getPage(dto);
     let pageConfig: PageConfig;
+    let errorMessage = '';
+
     try {
       page.on('response', addResponseSize);
       await page.goto(url, { waitUntil: 'load' });
@@ -286,8 +288,13 @@ export class CrawlerService {
       this.logger.error(
         `Failed to fetch page content: ${(e as Error).message}`,
       );
+      errorMessage = (e as Error).message || 'Unknown error';
     } finally {
-      if (pageConfig && pageConfig.type === PageType.WSJ && elements.length > 0) {
+      if (
+        pageConfig &&
+        pageConfig.type === PageType.WSJ &&
+        elements.length > 0
+      ) {
         const cookies = await page.cookies();
         this.loggedPagesPool.set(PageType.WSJ, {
           type: pageConfig.type,
@@ -304,6 +311,7 @@ export class CrawlerService {
       timestamp: Date.now(),
       elapsedTime: Date.now() - timeStart,
       networkTraffic,
+      errorMessage,
       elementsCount: elements.length,
       elements,
     };
