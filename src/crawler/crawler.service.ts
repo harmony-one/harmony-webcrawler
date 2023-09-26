@@ -183,7 +183,43 @@ export class CrawlerService {
       // await page.waitForSelector('.article-container, .layout-grid, .crawler', {
       //   timeout: 10000,
       // });
-      this.logger.log(`Logged in as ${username}`);
+      this.logger.log(`Logged in wsj.com as ${username}`);
+    } else if (dto.url.startsWith('https://twitter.com')) {
+      if (dto.username && dto.password) {
+        await page.goto('https://twitter.com/i/flow/login');
+        await page.waitForSelector('[aria-labelledby="modal-header"]', {
+          timeout: 10000,
+        });
+        const nextButtonSelector =
+          '[aria-labelledby="modal-header"] div[role="button"]:nth-child(6)';
+        await page.waitForSelector(nextButtonSelector, { timeout: 10000 });
+        await page.type('input', dto.username);
+
+        await page.click(nextButtonSelector);
+
+        await page.waitForTimeout(5000);
+
+        const nextUnusualActivity = '[data-testid="ocfEnterTextNextButton"]';
+        try {
+          if (await page.select(nextUnusualActivity)) {
+            await page.type('input', dto.username);
+            await page.click(nextUnusualActivity);
+            await page.waitForTimeout(5000);
+          }
+        } catch (e) {}
+
+        const loginButton = '[data-testid="LoginForm_Login_Button"]';
+        const passwordInput = 'input[name="password"]';
+        await page.waitForSelector(loginButton);
+        await page.waitForSelector('input[name="password"]');
+        await page.type(passwordInput, dto.password);
+
+        await page.click(loginButton);
+        // await page.waitForNavigation();
+        // await page.waitForTimeout(2000);
+        await page.waitForNetworkIdle({ timeout: 10000 });
+        this.logger.log(`Logged in twitter.com as ${dto.username}`);
+      }
     }
   }
 
