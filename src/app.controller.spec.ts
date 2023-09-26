@@ -72,7 +72,6 @@ describe('AppController', () => {
       });
       expect(data.elements.length).toBeGreaterThan(0);
     }, 30000);
-
     it('should return parsed data', async () => {
       const data = await appController.parseContent({
         url: 'https://harmony.one',

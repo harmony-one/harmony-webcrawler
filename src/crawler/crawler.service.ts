@@ -112,7 +112,7 @@ export class CrawlerService {
   private async checkSelector(page: Page, selector: string) {
     try {
       await page.waitForSelector(selector, {
-        timeout: 2000,
+        timeout: 200,
       });
     } catch (e) {
       return false;
@@ -203,6 +203,7 @@ export class CrawlerService {
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-features=site-per-process',
+          '--blink-settings=imagesEnabled=false',
         ],
         defaultViewport: {
           width: this.viewportWith,
